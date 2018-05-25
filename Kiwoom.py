@@ -13,6 +13,7 @@ class Kiwoom(QAxWidget):
         super().__init__()
         self._create_kiwoom_instance()
         self._set_signal_slots()
+        self.OnReceiveChejanData.connect(self._receive_chejan_data) #_set_signal_slots 메서드에 시그널과 슬롯을 연결
 
     def _create_kiwoom_instance(self):
         self.setControl("KHOPENAPI.KHOpenAPICtrl.1")
@@ -105,7 +106,7 @@ class Kiwoom(QAxWidget):
         ret = self.dynamicCall("GetChejanData(int)", fid)
         return ret
 
-    self.OnReceiveChejanData.connect(self._receive_chejan_data) #_set_signal_slots 메서드에 시그널과 슬롯을 연결
+
 
     def _receive_chejan_data(self, gubun, item_cnt, fid_list): #OnReceiveChejanData 이벤트가 발생할 때 호출되는 _receive_chejan_data
         print(gubun)
