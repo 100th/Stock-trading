@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>962</width>
-    <height>623</height>
+    <width>1089</width>
+    <height>703</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -239,8 +239,8 @@
      <rect>
       <x>260</x>
       <y>20</y>
-      <width>681</width>
-      <height>501</height>
+      <width>791</width>
+      <height>591</height>
      </rect>
     </property>
     <property name="title">
@@ -251,8 +251,8 @@
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>661</width>
-       <height>71</height>
+       <width>771</width>
+       <height>91</height>
       </rect>
      </property>
      <property name="rowCount">
@@ -294,9 +294,9 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>100</y>
-       <width>661</width>
-       <height>391</height>
+       <y>130</y>
+       <width>771</width>
+       <height>451</height>
       </rect>
      </property>
      <column>
@@ -334,8 +334,8 @@
    <widget class="QCheckBox" name="checkBox">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>533</y>
+      <x>850</x>
+      <y>623</y>
       <width>111</width>
       <height>20</height>
      </rect>
@@ -347,8 +347,8 @@
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>850</x>
-      <y>530</y>
+      <x>960</x>
+      <y>620</y>
       <width>93</width>
       <height>28</height>
      </rect>
@@ -363,7 +363,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>962</width>
+     <width>1089</width>
      <height>26</height>
     </rect>
    </property>
