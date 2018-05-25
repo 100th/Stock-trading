@@ -95,3 +95,25 @@ class Kiwoom(QAxWidget):
             self.ohlcv['low'].append(int(low))
             self.ohlcv['close'].append(int(close))
             self.ohlcv['volume'].append(int(volume))
+
+    def send_order(self, rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no):
+        #주식 주문에 대한 정보를 서버로 전송
+        self.dynamicCall("SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+                         [rqname, screen_no, acc_no, order_type, code, quantity, price, hoga, order_no])
+
+    def get_chejan_data(self, fid): #체결 잔고 데이터 가져오기
+        ret = self.dynamicCall("GetChejanData(int)", fid)
+        return ret
+
+    self.OnReceiveChejanData.connect(self._receive_chejan_data) #_set_signal_slots 메서드에 시그널과 슬롯을 연결
+
+    def _receive_chejan_data(self, gubun, item_cnt, fid_list): #OnReceiveChejanData 이벤트가 발생할 때 호출되는 _receive_chejan_data
+        print(gubun)
+        print(self.get_chejan_data(9203)) #주문번호
+        print(self.get_chejan_data(302)) #종목명
+        print(self.get_chejan_data(900)) #주문수량
+        print(self.get_chejan_data(901)) #주문가격
+
+    def get_login_info(self, tag): #계좌 정보 및 로그인 사용자 정보를 얻어오는 메서드
+        ret = self.dynamicCall("GetLoginInfo(QString)", tag)
+        return ret
