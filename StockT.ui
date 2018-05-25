@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>1089</width>
-    <height>703</height>
+    <height>774</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>StockT v0.3</string>
+   <string>StockT v0.4</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -240,7 +240,7 @@
       <x>260</x>
       <y>20</y>
       <width>791</width>
-      <height>591</height>
+      <height>501</height>
      </rect>
     </property>
     <property name="title">
@@ -296,7 +296,7 @@
        <x>10</x>
        <y>130</y>
        <width>771</width>
-       <height>451</height>
+       <height>361</height>
       </rect>
      </property>
      <column>
@@ -335,7 +335,7 @@
     <property name="geometry">
      <rect>
       <x>850</x>
-      <y>623</y>
+      <y>533</y>
       <width>111</width>
       <height>20</height>
      </rect>
@@ -348,7 +348,7 @@
     <property name="geometry">
      <rect>
       <x>960</x>
-      <y>620</y>
+      <y>530</y>
       <width>93</width>
       <height>28</height>
      </rect>
@@ -356,6 +356,59 @@
     <property name="text">
      <string>조회</string>
     </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>560</y>
+      <width>791</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>자동 선정 종목 리스트</string>
+    </property>
+    <widget class="QTableWidget" name="tableWidget_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>771</width>
+       <height>121</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text">
+       <string>주문유형</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>종목명</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>호가구분</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>수량</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>가격</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>상태</string>
+      </property>
+     </column>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
