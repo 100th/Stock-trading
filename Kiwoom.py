@@ -130,7 +130,7 @@ class Kiwoom(QAxWidget):
     #format 함수를 통해 천의 자리마다 콤마를 추가한 문자열로 변경
     def change_format(data):
         strip_data = data.lstrip('-0')
-        if strip_data == '':
+        if strip_data == '' or strip_data == '.00':
             strip_data = '0'
 
         format_data = format(int(strip_data), ',d')
@@ -173,7 +173,7 @@ class Kiwoom(QAxWidget):
         self.opw00018_output['single'].append(Kiwoom.change_format(total_purchase_price))
         self.opw00018_output['single'].append(Kiwoom.change_format(total_eval_price))
         self.opw00018_output['single'].append(Kiwoom.change_format(total_eval_profit_loss_price))
-        self.opw00018_output['single'].append(Kiwoom.change_format(total_earning_rate))
+        self.opw00018_output['single'].append(total_earning_rate)
         self.opw00018_output['single'].append(Kiwoom.change_format(estimated_deposit))
 
         #multi data
@@ -195,16 +195,6 @@ class Kiwoom(QAxWidget):
 
             self.opw00018_output['multi'].append([name, quantity, purchase_price, current_price, eval_profit_loss_price, earning_rate])
 
-#★★★★★★★★★★★★이 밑에 print들은 어쨰야 하는가?
-"""
-            print(name, quantity, purchase_price, current_price, eval_profit_loss_price, earning_rate) #최대 20개 까지 가능
-
-        print(Kiwoom.change_format(total_purchase_price)) #포맷을 문자열로 변경
-        print(Kiwoom.change_format(total_eval_price))
-        print(Kiwoom.change_format(total_eval_profit_loss_price))
-        print(Kiwoom.change_format(total_earning_rate))
-        print(Kiwoom.change_format(estimated_deposit))
-"""
     def reset_opw00018_output(self): #얻어온 데이터를 인스턴스 변수에 저장하기 위해
         self.opw00018_output = {'single': [], 'multi': []}
 
@@ -212,6 +202,7 @@ class Kiwoom(QAxWidget):
     def get_server_gubun(self):
         ret = self.dynamicCall("KOA_Functions(QString, QString)", "GetServerGubun", "")
         return ret
+
 
 """
 'D+2추정예수금'을 잘 얻어오는지 확인
