@@ -30,6 +30,7 @@ class MyWindow(QMainWindow, form_class):
 
         self.pushButton_2.clicked.connect(self.check_balance) #시그널과 슬롯을 연결하는 코드
 
+        self.load_buy_sell_list() #선정 종목 리스트 출력
 
     def timeout(self):
         current_time = QTime.currentTime() #현재 시간
@@ -117,6 +118,46 @@ class MyWindow(QMainWindow, form_class):
     def timeout2(self): # QCheckBox가 체크됐는지 확인한 후 체크돼 있을 때 데이터를 갱신
         if self.checkBox.isChecked():
             self.check_balance()
+
+    # buy_list.txt와 sell_list.txt 파일을 열고 파일로부터 데이터를 읽는 코드
+    # 아직 알고리즘을 안만들었기에
+    def load_buy_sell_list(self):
+        f = open("buy_list.txt", 'rt')
+        buy_list = f.readlines()
+        f.close()
+
+        f = open("sell_list.txt", 'rt')
+        sell_list = f.readlines()
+        f.close()
+
+        #데이터의 총 개수 확인
+        row_count = len(buy_list) + len(sell_list)
+        self.tableWidget_4.setRowCount(row_count)
+
+        # buy list 매수 종목
+        for j in range(len(buy_list)):
+            row_data = buy_list[j]
+            split_row_data = row_data.split(';')
+            split_row_data[1] = self.kiwoom.get_master_code_name(split_row_data[1].rsplit())
+
+            for i in range(len(split_row_data)):
+                item = QTableWidgetItem(split_row_data[i].rstrip())
+                item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                self.tableWidget_4.setItem(j, i, item)
+
+        # sell list 매도 종목
+        for j in range(len(sell_list)): #j : 행(row)에 대한 인덱스 값
+            row_data = sell_list[j]
+            split_row_data = row_data.split(';') #문자열을 ;로 분리
+            split_row_data[1] = self.kiwoom.get_master_code_name(split_row_data[1].rstrip()) #종목코드로부터 종목명 구하기
+
+            for i in range(len(split_row_data)): #i : 열(column)에 대한 인덱스 값
+                item = QTableWidgetItem(split_row_data[i].rstrip())
+                item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                self.tableWidget_4.setItem(len(buy_list) + j, i, item)
+
+        self.tableWidget_4.resizeRowsToContents() #행의 크기 조절
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
