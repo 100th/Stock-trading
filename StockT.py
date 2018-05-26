@@ -14,6 +14,8 @@ class MyWindow(QMainWindow, form_class):
         self.kiwoom = Kiwoom()
         self.kiwoom.comm_connect()  #키움 로그인
 
+        self.trade_stocks_done = False #자동 주문
+
         self.timer = QTimer(self)
         self.timer.start(1000) #1초에 한 번씩 주기적으로 timeout 시그널이 발생
         self.timer.timeout.connect(self.timeout) #timeout 시그널이 발생할 때 이를 처리할 슬롯으로 self.timeout을 설정
@@ -33,7 +35,15 @@ class MyWindow(QMainWindow, form_class):
         self.load_buy_sell_list() #선정 종목 리스트 출력
 
     def timeout(self):
-        current_time = QTime.currentTime() #현재 시간
+        # 현재 시간이 09시 00분 00초를 지났고 매수/매도 주문을 수행하지 않았을 때 trade_stocks 메서드 호출
+        market_start_time = QTime(9, 0, 0)
+        current_time = QTime.currentTime()
+
+        # 장이 시작할 때 매수/매도 주문을 넣으려면 timeout 메서드에서 시간 체크
+        if current_time > market_start_time and self.trade_stocks_done is False:
+            self.trade_stocks()
+            self.trade_stocks_done = True
+
         text_time = current_time.toString("hh:mm:ss") #시간:분:초
         time_msg = "현재시간: " + text_time
 
@@ -158,6 +168,67 @@ class MyWindow(QMainWindow, form_class):
 
         self.tableWidget_4.resizeRowsToContents() #행의 크기 조절
 
+
+    # 장이 시작하면 미리 선정된 종목에 대해 자동으로 주문하는 기능 구현
+    def trade_stocks(self):
+        hoga_lookup = {'지정가': "00", '시장가': "03"}
+
+        f = open("buy_list.txt", 'rt')
+        buy_list = f.readlines()
+        f.close()
+
+        f = open("sell_list.txt", 'rt')
+        sell_list = f.readlines()
+        f.close()                           #미리 생성된 파일로부터 매수/매도 종목을 읽는 코드
+
+        # account
+        # 주문할 때 필요한 계좌 정보
+        account = self.comboBox.currentText()
+
+        # buy list 매수 주문
+        # 데이터를 하나씩 얻어온 후 문자열을 분리해서 주문에 필요한 정보 준비
+        for row_data in buy_list:
+            split_row_data = row_data.split(';')
+            hoga = split_row_data[2]
+            code = split_row_data[1]
+            num = split_row_data[3]
+            price = split_row_data[4]
+
+            # 읽어온 데이터의 주문 수행 여부가 ‘매수전’인 경우에만 해당 주문 데이터를 토대로 send_order 메서드를 통해 매수 주문 수행
+            if split_row_data[-1].rstrip() == '매수전':
+                self.kiwoom.send_order("send_order_req", "0101", account, 1, code, num, price, hoga_lookup[hoga], "")
+
+        # sell list 매도 주문
+        for row_data in sell_list:
+            split_row_data = row_data.split(';')
+            hoga = split_row_data[2]
+            code = split_row_data[1]
+            num = split_row_data[3]
+            price = split_row_data[4]
+
+            if split_row_data[-1].rstrip() == '매도전':
+                self.kiwoom.send_order("send_order_req", "0101", account, 2, code, num, price, hoga_lookup[hoga], "")
+
+        # buy list
+        # 저장된 주문 여부를 업데이트
+        for i, row_data in enumerate(buy_list):
+            buy_list[i] = buy_list[i].replace("매수전", "주문완료") #바꾸기
+
+        # file update
+        f = open("buy_list.txt", 'wt')
+        for row_data in buy_list:
+            f.write(row_data)
+        f.close()
+
+        # sell list
+        for i, row_data in enumerate(sell_list):
+            sell_list[i] = sell_list[i].replace("매도전", "주문완료")
+
+        # file update
+        f = open("sell_list.txt", 'wt')
+        for row_data in sell_list:
+            f.write(row_data)
+        f.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
