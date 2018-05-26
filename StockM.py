@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import *
 import Kiwoom
 import time
 from pandas import DataFrame
+import datetime
 
 MARKET_KOSPI   = 0
 MARKET_KOSDAQ  = 10
@@ -34,15 +35,56 @@ class StockM:
         self.kiwoom.set_input_value("기준일자", start)
         self.kiwoom.set_input_value("수정주가구분", 1)
         self.kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
-        time.sleep(0.2) #0.2초 간격
+        time.sleep(0.5)
 
         #효율적으로 저장하기 위해 pandas의 dataframe
         df = DataFrame(self.kiwoom.ohlcv, columns=['open', 'high', 'low', 'close', 'volume'], index=self.kiwoom.ohlcv['date'])
         return df
 
+    #'급등주 포착' 알고리즘
+    #특정 거래일의 거래량이 이전 시점의 평균 거래량보다 1000% 이상 급증하는 종목을 매수
+    #'이전 시점의 평균 거래량'을 특정 거래일 이전의 20일(거래일 기준) 동안의 평균 거래량으로 정의
+    #'거래량 급증'은 특정 거래일의 거래량이 평균 거래량보다 1000% 초과일 때 급등한 것으로 정의
+    def check_speedy_rising_volume(self, code): #메서드 인자로 종목코드 전달 받기
+        today = datetime.datetime.today().strftime("%Y%m%d") #오늘 날짜
+        df = self.get_ohlcv(code, today) #앞서 구현한 get_ohlcv 메서드를 호출해서
+        volumes = df['volume'] # 해당 종목 데이터를 DataFrame 객체로 얻어온 후 그중 거래량 칼럼만 바인딩
+
+        if len(volumes) < 21: #최근에 상장된 종목이라면 데이터가 충분하지 않으므로 걸러내기
+            return False
+
+        sum_vol20 = 0 #일별 거래량 누적
+        today_vol = 0 #조회 시작일 거래량
+
+        for i, vol in enumerate(volumes):
+            if i == 0:
+                today_vol = vol
+            elif 1 <= i <= 20:
+                sum_vol20 += vol
+            else:
+                break
+
+        avg_vol20 = sum_vol20 / 20  #20일의 평균 거래량을 계산한 후 조회 시작일의 거래량과 비교
+        if today_vol > avg_vol20 * 10:
+            return True #만약 조회 시작일의 거래량이 평균 거래량을 1,000% 초과한다면 True를 반환
+
+    # 선정된 종목에 대한 정보를 파일로 쓰는 기능
+    def update_buy_list(self, buy_list): #종목코드 리스트 받기
+        f = open("buy_list.txt", "wt")
+        for code in buy_list:
+            f.writelines("매수;", code, ";시장가;10;0;매수전") #메서드 인자로 전달된 매수 종목에 대해 파일에 라인 단위로 출력
+        f.close()                                             #매수 수량은 예시 단순화 위해 '10주'로
+
     def run(self):
-        df = self.get_ohlcv("039490", "20170321")
-        print(df) #테스트
+        buy_list = [] #빈 리스트 생성
+        num = len(self.kosdaq_codes)
+
+        for i, code in enumerate(self.kosdaq_codes):
+            print(i, '/', num)
+            if self.check_speedy_rising_volume(code): #check_speedy~ 반환값이 True인 종목의 종목코드를 해당 리스트에 추가
+                buy_list.append(code)
+
+        self.update_buy_list(buy_list) #거래량 급증 종목을 파일로 출력
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
