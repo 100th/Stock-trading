@@ -1,13 +1,14 @@
-import sys
-from PyQt5.QtWidgets import *
-import Kiwoom
-
 """
 * 급등주 포착 알고리즘 기반의 종목 선정 *
 : 매일 장 종료 후 자동으로 실행되어
 유가증권 시장과 코스닥 시장에서 미리 구현된 매수/매도 알고리즘에 부합하는 종목을 찾은 후
 이를 buy_list.txt와 sell_list.txt로 저장
 """
+import sys
+from PyQt5.QtWidgets import *
+import Kiwoom
+import time
+from pandas import DataFrame
 
 MARKET_KOSPI   = 0
 MARKET_KOSDAQ  = 10
@@ -24,9 +25,24 @@ class StockM:
         self.kospi_codes = self.kiwoom.get_code_list_by_market(MARKET_KOSPI)
         self.kosdaq_codes = self.kiwoom.get_code_list_by_market(MARKET_KOSDAQ)
 
+    #오늘 날짜를 시작으로 과거 거래일별로 시가, 고가, 저가, 종가, 거래량을 가져오는 메서드
+    #메서드의 인자로 조회할 종목에 대한 종목코드와 기준일자를 받는다
+    def get_ohlcv(self, code, start):
+        self.kiwoom.ohlcv = {'date': [], 'open': [], 'high': [], 'low': [], 'close': [], 'volume': []}
+
+        self.kiwoom.set_input_value("종목코드", code)
+        self.kiwoom.set_input_value("기준일자", start)
+        self.kiwoom.set_input_value("수정주가구분", 1)
+        self.kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
+        time.sleep(0.2) #0.2초 간격
+
+        #효율적으로 저장하기 위해 pandas의 dataframe
+        df = DataFrame(self.kiwoom.ohlcv, columns=['open', 'high', 'low', 'close', 'volume'], index=self.kiwoom.ohlcv['date'])
+        return df
+
     def run(self):
-        print(self.kospi_codes[0:4])
-        print(self.kosdaq_codes[0:4]) #테스트
+        df = self.get_ohlcv("039490", "20170321")
+        print(df) #테스트
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
