@@ -142,7 +142,7 @@ class StockT(QMainWindow, form_class):
 
         #데이터의 총 개수 확인
         row_count = len(buy_list) + len(sell_list)
-        self.tableWidget_4.setRowCount(row_count)
+        self.tableWidget_3.setRowCount(row_count)
 
         # buy list 매수 종목
         for j in range(len(buy_list)):
@@ -153,7 +153,7 @@ class StockT(QMainWindow, form_class):
             for i in range(len(split_row_data)):
                 item = QTableWidgetItem(split_row_data[i].rstrip())
                 item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
-                self.tableWidget_4.setItem(j, i, item)
+                self.tableWidget_3.setItem(j, i, item)
 
         # sell list 매도 종목
         for j in range(len(sell_list)): #j : 행(row)에 대한 인덱스 값
@@ -164,9 +164,9 @@ class StockT(QMainWindow, form_class):
             for i in range(len(split_row_data)): #i : 열(column)에 대한 인덱스 값
                 item = QTableWidgetItem(split_row_data[i].rstrip())
                 item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
-                self.tableWidget_4.setItem(len(buy_list) + j, i, item)
+                self.tableWidget_3.setItem(len(buy_list) + j, i, item)
 
-        self.tableWidget_4.resizeRowsToContents() #행의 크기 조절
+        self.tableWidget_3.resizeRowsToContents() #행의 크기 조절
 
 
     # 장이 시작하면 미리 선정된 종목에 대해 자동으로 주문하는 기능 구현
