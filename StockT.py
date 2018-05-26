@@ -6,7 +6,7 @@ from Kiwoom import *
 
 form_class = uic.loadUiType("StockT.ui")[0]
 
-class MyWindow(QMainWindow, form_class):
+class StockT(QMainWindow, form_class):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -232,6 +232,6 @@ class MyWindow(QMainWindow, form_class):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    myWindow = MyWindow()
-    myWindow.show()
+    stockt = StockT()
+    stockt.show()
     app.exec_()
