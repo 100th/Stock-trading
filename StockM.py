@@ -10,6 +10,8 @@ import Kiwoom
 import time
 from pandas import DataFrame
 import datetime
+import StockR
+import numpy as np
 
 MARKET_KOSPI   = 0
 MARKET_KOSDAQ  = 10
@@ -35,7 +37,7 @@ class StockM:
         self.kiwoom.set_input_value("기준일자", start)
         self.kiwoom.set_input_value("수정주가구분", 1)
         self.kiwoom.comm_rq_data("opt10081_req", "opt10081", 0, "0101")
-        time.sleep(0.5)
+        time.sleep(3.6)
 
         #효율적으로 저장하기 위해 pandas의 dataframe
         df = DataFrame(self.kiwoom.ohlcv, columns=['open', 'high', 'low', 'close', 'volume'], index=self.kiwoom.ohlcv['date'])
@@ -82,11 +84,65 @@ class StockM:
         for i, code in enumerate(self.kosdaq_codes):
             print(i, '/', num)
             if self.check_speedy_rising_volume(code): #check_speedy~ 반환값이 True인 종목의 종목코드를 해당 리스트에 추가
+                print("급등주: ", code)
                 buy_list.append(code)
 
         self.update_buy_list(buy_list) #거래량 급증 종목을 파일로 출력
 
+    #현재 거래일 기준으로 예상 현금배당수익률(or 현금배당수익률)과 3년 만기 국채수익률의 일별 시세를 가져와 국채시가배당률을 계산하는 메서드
+    #예상 현금배당수익률은 StockR 모듈의 get_estimated_dividend_yield 함수를 호출
+    #현금배당수익률은 get_dividend_yield 함수를 사용
+    #3년 만기 국채수익률은 get_current_3year_treasury 함수로
+    #예상 현금배당수익률이 존재하는 종목은 해당 값을 사용하고, 그렇지 않은 종목은 현금배당수익률을 사용
+    def calculate_estimated_dividend_to_treasury(self, code):
+        estimated_dividend_yield = StockR.get_estimated_dividend_yield(code)
+        if np.isnan(estimated_dividend_yield):
+            estimated_dividend_yield = StockR.get_dividend_yield(code)
+
+        current_3year_treasury = StockR.get_current_3year_treasury()
+        estimated_dividend_to_treasury = float(estimated_dividend_yield) / float(current_3year_treasury)
+        return estimated_dividend_to_treasury
+        #국채시가배당률 = 현금배당수익률 / 3년 만기 국채수익률. 함수를 호출해 가져온 값이 문자열이므로 실수형으로 형을 변환한 후 나눔
+
+    #최근 5년에 대한 국채시가배당률 중 최댓값과 최솟값을 반환하는 함수 구현
+    #StockR 모듈 내의 함수를 사용해 최대 5년 치에 대한 시가배당률과 연도별 3년 만기 국채 수익률 데이터(1998년~2016년)를 얻어옵
+    def get_min_max_dividend_to_treasury(self, code):
+        previous_dividend_yield = StockR.get_previous_dividend_yield(code)
+        three_years_treasury = StockR.get_3year_treasury()
+
+        now = datetime.datetime.now()
+        cur_year = now.year
+        previous_dividend_to_treasury = {} #각 연도별 국채시가배당률을 저장할 파이썬 딕셔너리 객체를 생성
+
+        #각 연도에 대해 국채시가배당률을 계산한 후 딕셔너리에 추가
+        #딕셔너리의 키는 연도이고 값은 해당 연도의 국채시가 배당률
+        #일부 종목은 과거 연도의 데이터가 존재하지 않을 수 있기 때문에 if 문을 사용해 먼저 해당 연도가 딕셔너리의 키 값에 존재하는지 확인
+        for year in range(cur_year-5, cur_year):
+            if year in previous_dividend_yield.keys() and year in three_years_treasury.keys():
+                ratio = float(previous_dividend_yield[year]) / float(three_years_treasury[year])
+                previous_dividend_to_treasury[year] = ratio
+
+        print(previous_dividend_to_treasury)
+        min_ratio = min(previous_dividend_to_treasury.values())
+        max_ratio = max(previous_dividend_to_treasury.values())
+
+        return (min_ratio, max_ratio)
+
+    #현재 시점을 기준으로 계산한 국채시가배당률이 과거 5년 치 국채시가배당률의 최댓값보다 큰 경우 해당 종목을 매수하는 알고리즘
+    #현시점에서의 예상 국채시가배당률을 calculate_estimated_dividend_to_treasury 메서드를 호출
+    #과거 5년에 대한 최대, 최소 국채시가배당률은 get_min_max_dividend_to_treasury 메서드를 호출
+    #if 문을 사용해 현시점의 예상 국채시가배당률이 과거 5년에 대한 국채시가배당률의 최댓값보다 크거나 같은 경우 ‘(1, 예상 국채시가배당률)’의 튜플을 리턴
+    def buy_check_by_dividend_algorithm(self, code):
+        estimated_dividend_to_treasury = self.calculate_estimated_dividend_to_treasury(code)
+        (min_ratio, max_ratio) = self.get_min_max_dividend_to_treasury(code)
+
+        if estimated_dividend_to_treasury >= max_ratio:
+            return (1, estimated_dividend_to_treasury)
+        else:
+            return (0, estimated_dividend_to_treasury)
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    stockm = StockM()
-    stockm.run()
+    stockM = StockM()
+    print(stockM.buy_check_by_dividend_algorithm('058470'))
