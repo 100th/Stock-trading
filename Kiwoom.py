@@ -133,7 +133,7 @@ class Kiwoom(QAxWidget):
         if strip_data == '' or strip_data == '.00':
             strip_data = '0'
 
-        format_data = format(int(strip_data), ',d')
+        format_data = format(int(float(strip_data)), ',d')
         if data.startswith('-'):
             format_data = '-' + format_data
 
@@ -205,7 +205,7 @@ class Kiwoom(QAxWidget):
 
 
 """
-'D+2추정예수금'을 잘 얻어오는지 확인
+#'D+2추정예수금'을 잘 얻어오는지 확인
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     kiwoom = Kiwoom()
@@ -216,8 +216,9 @@ if __name__ == "__main__":
     kiwoom.comm_rq_data("opw00001_req", "opw00001", 0, "2000")
 
     print(kiwoom.d2_deposit)
-
-'계좌정보' 잘 얻어오는지 확인
+"""
+"""
+#'계좌정보' 잘 얻어오는지 확인
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     kiwoom = Kiwoom()
