@@ -74,7 +74,7 @@ class StockM:
     def update_buy_list(self, buy_list): #종목코드 리스트 받기
         f = open("buy_list.txt", "wt")
         for code in buy_list:
-            f.writelines("매수;", code, ";시장가;10;0;매수전") #메서드 인자로 전달된 매수 종목에 대해 파일에 라인 단위로 출력
+            f.writelines("매수;"+ code + ";시장가;10;0;매수전\n") #메서드 인자로 전달된 매수 종목에 대해 파일에 라인 단위로 출력
         f.close()                                             #매수 수량은 예시 단순화 위해 '10주'로
 
     def run(self):
@@ -84,7 +84,8 @@ class StockM:
         for i, code in enumerate(self.kosdaq_codes):
             print(i, '/', num)
             if self.check_speedy_rising_volume(code): #check_speedy~ 반환값이 True인 종목의 종목코드를 해당 리스트에 추가
-                print("급등주: ", code)
+                #print("급등주: ", code)
+                #print("급등주: %s, %s" % (code, self.kiwoom.get_master_code_name(code)))
                 buy_list.append(code)
 
         self.update_buy_list(buy_list) #거래량 급증 종목을 파일로 출력
@@ -156,26 +157,33 @@ class StockM:
 
         # 반복문에서 self.kospi_codes의 종목을 하나씩 가져온 후 buy_check_by_dividend_algorithm 메서드를 호출
         # 간단히 구현한 메서드를 테스트하기 위해 유가증권시장의 50개 종목에 대해서만 체크하도록 코드를 수정
-        for code in self.kospi_codes[0:50]:
-            time.sleep(0.5)
+        for code in self.kospi_codes[0:100]:
+            print('Check: ', code)
+            time.sleep(0.1)
             ret = self.buy_check_by_dividend_algorithm(code)
             # 반환값인 튜플의 첫 번째 원소가 1이면 buy_list에 추가
             if ret[0] == 1:
+                print("Pass", ret)
                 buy_list.append((code, ret[1]))
+            else:
+                print("Fail", ret)
 
         #국채시가배당률 알고리즘 기반으로 매수 신호가 발생한 경우 종목과 해당 종목에 대한 국채시가배당률이 buy_list에 저장
         #매수 종목이 여러 개인 경우 그중 국채시가배당률이 높은 종목이 더 매수에 적합하므로 다음과 같이 국채시가배당률이 높은 종목을 기준으로 정렬
-        sorted_list = sorted(buy_list, key=lambda t:t[1], reverse=True)
+        sorted_list = sorted(buy_list, key=lambda t: t[1], reverse=True)
+
 
         #국채시가배당률이 높은 상위 5개 종목을 buy_list.txt 파일에 추가
         #매수 종목 리스트를 buy_list.txt 파일에 출력하는 기능은 update_buy_list 메서드에 이미 구현되어 있음
         #따라서 sorted_list에서 상위 5개 종목에 대한 종목 코드로 새로운 리스트로 만든 후 해당 리스트를 update_buy_list 메서드의 인자로 전달
+
         buy_list = []
         for i in range(0, 5):
             code = sorted_list[i][0]
             buy_list.append(code)
 
         self.update_buy_list(buy_list)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
