@@ -23,10 +23,7 @@ import numpy as np
 def get_financial_statements(code):
     url = "http://companyinfo.stock.naver.com/v1/company/ajax/cF1001.aspx?cmp_cd=%s&fin_typ=0&freq_typ=Y" % (code)
     html = requests.get(url).text
-
-    df_list = pd.read_html(html)
-    df = df_list[0]
-
+    
     # replace 메서드를 사용해 불필요한 HTML 태그 및 공백 문자열을 제거
     html = html.replace('<th class="bg r01c02 endLine line-bottom"colspan="8">연간</th>', "")
     html = html.replace("<span class='span-sub'>(IFRS연결)</span>", "")
@@ -71,15 +68,19 @@ def get_3year_treasury():
         treasury_3year[start_year] = x.text
         start_year += 1
 
-    print(treasury_3year)
+    #print(treasury_3year)
     return treasury_3year
 
+#현금배당수익률 파싱
 def get_dividend_yield(code):
-    url = "http://companyinfo.stock.naver.com/company/c1010001.aspx?cmp_cd=" + code
+    url = "http://companyinfo.stock.naver.com/company/c1010001.aspx?cmp_cd=" + code #기업 현황 웹페이지
     html = requests.get(url).text
 
     soup = BeautifulSoup(html, 'lxml')
     td_data = soup.find_all('td', {'class': 'cmp-table-cell td0301'})
+    # HTML 코드에서 특정 td 태그가 존재하지 않는 경우 빈 문자열을 반환
+    if not td_data:
+        return ""
     dt_data = td_data[0].find_all('dt')
 
     dividend_yield = dt_data[5].text #현금배당수익률은 6번째에 위치하므로 [5]로 인덱싱해서 데이터에 접근
@@ -101,14 +102,14 @@ def get_estimated_dividend_yield(code):
 
     #만약 당해 연도에 현금배당수익률이 존재하지 않는 경우에는 이전 연도의 현금배당수익률을 반환하도록 구현
     #데이터가 존재하지 않을 때는 NaN을 돌려주는데, 이를 확인하기 위해 Numpy 모듈의 isnan 메서드를 사용
-    if str(cur_year) in dividend_yield.index:
-        cur_year_dividend_yield = dividend_yield[str(cur_year)]
-        if np.isnan(cur_year_dividend_yield):
-            return dividend_yield[str(cur_year-1)]
-        else:
-            return cur_year_dividend_yield
-    else:
+    if str(cur_year) in dividend_yield.index and not np.isnan(dividend_yield[str(cur_year)]):
+        return dividend_yield[str(cur_year)]
+    #해당 연도 및 이전 연도에 데이터가 존재하는지 확인하기 위해 np.isnan 메서드를 사용
+    elif str(cur_year-1) in dividend_yield.index and not np.isnan(dividend_yield[str(cur_year-1)]):
         return dividend_yield[str(cur_year-1)]
+    #예상 현금배당수익률이 존재하지 않는 경우에는 np.NaN을 반환
+    else:
+        return np.NaN
 
 #3년 만기 국채 수익률의 일별 시세를 파싱하는 함수
 def get_current_3year_treasury():

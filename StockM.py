@@ -94,10 +94,14 @@ class StockM:
     #현금배당수익률은 get_dividend_yield 함수를 사용
     #3년 만기 국채수익률은 get_current_3year_treasury 함수로
     #예상 현금배당수익률이 존재하는 종목은 해당 값을 사용하고, 그렇지 않은 종목은 현금배당수익률을 사용
+    #현금배당수익률이 존재하지 않는 경우 빈 문자열이 반환되는데 이 경우 현금배당수익률을 0으로 할당
     def calculate_estimated_dividend_to_treasury(self, code):
         estimated_dividend_yield = StockR.get_estimated_dividend_yield(code)
         if np.isnan(estimated_dividend_yield):
             estimated_dividend_yield = StockR.get_dividend_yield(code)
+
+            if estimated_dividend_yield == "":
+                estimated_dividend_yield = 0
 
         current_3year_treasury = StockR.get_current_3year_treasury()
         estimated_dividend_to_treasury = float(estimated_dividend_yield) / float(current_3year_treasury)
@@ -122,7 +126,10 @@ class StockM:
                 ratio = float(previous_dividend_yield[year]) / float(three_years_treasury[year])
                 previous_dividend_to_treasury[year] = ratio
 
-        print(previous_dividend_to_treasury)
+        #print(previous_dividend_to_treasury)
+        if not previous_dividend_yield:
+            return (0, 0)
+
         min_ratio = min(previous_dividend_to_treasury.values())
         max_ratio = max(previous_dividend_to_treasury.values())
 
@@ -136,13 +143,41 @@ class StockM:
         estimated_dividend_to_treasury = self.calculate_estimated_dividend_to_treasury(code)
         (min_ratio, max_ratio) = self.get_min_max_dividend_to_treasury(code)
 
-        if estimated_dividend_to_treasury >= max_ratio:
+        #데이터가 존재하지 않는 경우 estimated_dividend_to_treasury와 max_ratio가 0이 된다.
+        #이 경우 if 문을 만족해서 매수 신호가 발생하기 때문에 max_ratio !=0 구문을 추가
+        if estimated_dividend_to_treasury >= max_ratio and max_ratio != 0:
             return (1, estimated_dividend_to_treasury)
         else:
             return (0, estimated_dividend_to_treasury)
 
+    #유가증권시장의 전 종목에 대해 국채시가배당률 알고리즘을 사용해 매수 여부를 체크
+    def run_dividend(self):
+        buy_list = []
+
+        # 반복문에서 self.kospi_codes의 종목을 하나씩 가져온 후 buy_check_by_dividend_algorithm 메서드를 호출
+        # 간단히 구현한 메서드를 테스트하기 위해 유가증권시장의 50개 종목에 대해서만 체크하도록 코드를 수정
+        for code in self.kospi_codes[0:50]:
+            time.sleep(0.5)
+            ret = self.buy_check_by_dividend_algorithm(code)
+            # 반환값인 튜플의 첫 번째 원소가 1이면 buy_list에 추가
+            if ret[0] == 1:
+                buy_list.append((code, ret[1]))
+
+        #국채시가배당률 알고리즘 기반으로 매수 신호가 발생한 경우 종목과 해당 종목에 대한 국채시가배당률이 buy_list에 저장
+        #매수 종목이 여러 개인 경우 그중 국채시가배당률이 높은 종목이 더 매수에 적합하므로 다음과 같이 국채시가배당률이 높은 종목을 기준으로 정렬
+        sorted_list = sorted(buy_list, key=lambda t:t[1], reverse=True)
+
+        #국채시가배당률이 높은 상위 5개 종목을 buy_list.txt 파일에 추가
+        #매수 종목 리스트를 buy_list.txt 파일에 출력하는 기능은 update_buy_list 메서드에 이미 구현되어 있음
+        #따라서 sorted_list에서 상위 5개 종목에 대한 종목 코드로 새로운 리스트로 만든 후 해당 리스트를 update_buy_list 메서드의 인자로 전달
+        buy_list = []
+        for i in range(0, 5):
+            code = sorted_list[i][0]
+            buy_list.append(code)
+
+        self.update_buy_list(buy_list)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     stockM = StockM()
-    print(stockM.buy_check_by_dividend_algorithm('058470'))
+    stockM.run_dividend()
