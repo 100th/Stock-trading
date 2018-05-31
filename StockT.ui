@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>StockT v0.4</string>
+   <string>StockT v0.4.1</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -239,8 +239,8 @@
      <rect>
       <x>260</x>
       <y>20</y>
-      <width>791</width>
-      <height>501</height>
+      <width>801</width>
+      <height>421</height>
      </rect>
     </property>
     <property name="title">
@@ -296,7 +296,7 @@
        <x>10</x>
        <y>130</y>
        <width>771</width>
-       <height>361</height>
+       <height>271</height>
       </rect>
      </property>
      <column>
@@ -335,7 +335,7 @@
     <property name="geometry">
      <rect>
       <x>850</x>
-      <y>533</y>
+      <y>453</y>
       <width>111</width>
       <height>20</height>
      </rect>
@@ -348,7 +348,7 @@
     <property name="geometry">
      <rect>
       <x>960</x>
-      <y>530</y>
+      <y>450</y>
       <width>93</width>
       <height>28</height>
      </rect>
@@ -361,9 +361,9 @@
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>560</y>
+      <y>480</y>
       <width>791</width>
-      <height>151</height>
+      <height>231</height>
      </rect>
     </property>
     <property name="title">
@@ -375,7 +375,7 @@
        <x>10</x>
        <y>20</y>
        <width>771</width>
-       <height>121</height>
+       <height>201</height>
       </rect>
      </property>
      <column>
