@@ -159,7 +159,7 @@ class StockM:
         # 간단히 구현한 메서드를 테스트하기 위해 유가증권시장의 50개 종목에 대해서만 체크하도록 코드를 수정
         for code in self.kospi_codes[0:100]:
             print('Check: ', code)
-            time.sleep(0.1)
+            time.sleep(0.5)
             ret = self.buy_check_by_dividend_algorithm(code)
             # 반환값인 튜플의 첫 번째 원소가 1이면 buy_list에 추가
             if ret[0] == 1:
