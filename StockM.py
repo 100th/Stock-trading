@@ -127,12 +127,12 @@ class StockM:
                 ratio = float(previous_dividend_yield[year]) / float(three_years_treasury[year])
                 previous_dividend_to_treasury[year] = ratio
 
-        #print(previous_dividend_to_treasury)
-        if not previous_dividend_yield:
-            return (0, 0)
+        print(previous_dividend_to_treasury)
+        #if not previous_dividend_yield:
+        #    return (0, 0)
 
-        min_ratio = min(previous_dividend_to_treasury.values())
-        max_ratio = max(previous_dividend_to_treasury.values())
+        min_ratio = min(previous_dividend_to_treasury.values(), default = 1)
+        max_ratio = max(previous_dividend_to_treasury.values(), default = 0)
 
         return (min_ratio, max_ratio)
 
@@ -157,16 +157,16 @@ class StockM:
 
         # 반복문에서 self.kospi_codes의 종목을 하나씩 가져온 후 buy_check_by_dividend_algorithm 메서드를 호출
         # 간단히 구현한 메서드를 테스트하기 위해 유가증권시장의 50개 종목에 대해서만 체크하도록 코드를 수정
-        for code in self.kospi_codes[0:100]:
+        for code in self.kospi_codes:
             print('Check: ', code)
-            time.sleep(0.5)
+            time.sleep(0.1)
             ret = self.buy_check_by_dividend_algorithm(code)
             # 반환값인 튜플의 첫 번째 원소가 1이면 buy_list에 추가
             if ret[0] == 1:
-                print("Pass", ret)
+                #print("Pass", ret)
                 buy_list.append((code, ret[1]))
-            else:
-                print("Fail", ret)
+            #else:
+                #print("Fail", ret)
 
         #국채시가배당률 알고리즘 기반으로 매수 신호가 발생한 경우 종목과 해당 종목에 대한 국채시가배당률이 buy_list에 저장
         #매수 종목이 여러 개인 경우 그중 국채시가배당률이 높은 종목이 더 매수에 적합하므로 다음과 같이 국채시가배당률이 높은 종목을 기준으로 정렬
